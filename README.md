@@ -4,8 +4,10 @@
 
 ## Introduction
 
-A Keras implementation of YOLOv4 (Tensorflow backend) inspired by [allanzelener/YAD2K](https://github.com/allanzelener/YAD2K) and [qqwweee/keras-yolo3](https://github.com/qqwweee/keras-yolo3) that is exported to CoreML via coremltools.
+A conversion tool to convert Tensorflow model (weights file) to CoreML model via Keras and coremltools. Inspired by [MPieter](https://github.com/MPieter/YOLOv4-CoreML-Converter).
 
+- Support both YOLOv4 and YOLOv4 Tiny models
+- Support to export Keras h5 format model also. 
 
 ---
 
@@ -19,7 +21,7 @@ To also export the intermediate Keras model use the argument `--keras_output_pat
 
 ## Tested with
 
-    - Python 3.7.3
+    - Python 3.x.x
     - Keras 2.2.4
-    - tensorflow 2.2.0
-    - coremltools 4.0b3
+    - tensorflow 2.x.0
+    - coremltools 5.0

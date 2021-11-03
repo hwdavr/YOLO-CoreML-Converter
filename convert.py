@@ -13,7 +13,7 @@ from collections import defaultdict
 
 import numpy as np
 from tensorflow.keras import backend as K
-from tensorflow.keras.layers import (Conv2D, Input, ZeroPadding2D, Add,
+from tensorflow.keras.layers import (Conv2D, Input, ZeroPadding2D, Add, 
                                      UpSampling2D, MaxPooling2D, Concatenate)
 from tensorflow.keras.layers import LeakyReLU, Layer
 from tensorflow.keras.layers import BatchNormalization
@@ -128,7 +128,7 @@ def _main(args):
 
     print('Creating Keras model.')
     input_layer = Input(
-        shape=(int(args.input_resolution), int(args.input_resolution), 3))
+        shape=(int(cfg_parser['net_0']['width']), int(cfg_parser['net_0']['height']), 3))
     prev_layer = input_layer
     all_layers = []
 
@@ -136,6 +136,7 @@ def _main(args):
                          ) if 'net_0' in cfg_parser.sections() else 5e-4
     count = 0
     out_index = []
+    route_groups = 1  # groups number for route layer in tiny model
     for section in cfg_parser.sections():
         print('Parsing section {}'.format(section))
         if section.startswith('convolutional'):
@@ -153,7 +154,7 @@ def _main(args):
             # [bias/beta, [gamma, mean, variance], conv_weights]
             prev_layer_shape = K.int_shape(prev_layer)
 
-            weights_shape = (size, size, prev_layer_shape[-1], filters)
+            weights_shape = (size, size, int(prev_layer_shape[-1] / route_groups), filters)
             darknet_w_shape = (filters, weights_shape[2], size, size)
             weights_size = np.product(weights_shape)
 
@@ -208,6 +209,7 @@ def _main(args):
             if stride > 1:
                 # Darknet uses left and top padding instead of 'same' mode
                 prev_layer = ZeroPadding2D(((1, 0), (1, 0)))(prev_layer)
+
             conv_layer = (Conv2D(
                 filters, (size, size),
                 strides=(stride, stride),
@@ -215,12 +217,16 @@ def _main(args):
                 use_bias=not batch_normalize,
                 weights=conv_weights,
                 activation=act_fn,
+                groups=route_groups,
                 padding=padding))(prev_layer)
 
             if batch_normalize:
                 conv_layer = (BatchNormalization(
                     weights=bn_weight_list))(conv_layer)
             prev_layer = conv_layer
+
+            # Reset route group if the previous layer is convolutional
+            route_groups = 1
 
             if activation == 'linear':
                 all_layers.append(prev_layer)
@@ -241,10 +247,15 @@ def _main(args):
                 concatenate_layer = Concatenate()(layers)
                 all_layers.append(concatenate_layer)
                 prev_layer = concatenate_layer
+                route_groups = 1
             else:
                 skip_layer = layers[0]  # only one layer to route
                 all_layers.append(skip_layer)
                 prev_layer = skip_layer
+                if 'groups' in cfg_parser[section]:
+                    route_groups = int(cfg_parser[section]['groups'])
+                else:
+                    route_groups = 1
 
         elif section.startswith('maxpool'):
             size = int(cfg_parser[section]['size'])
