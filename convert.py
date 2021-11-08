@@ -13,7 +13,7 @@ from collections import defaultdict
 
 import numpy as np
 from tensorflow.keras import backend as K
-from tensorflow.keras.layers import (Conv2D, Input, ZeroPadding2D, Add, 
+from tensorflow.keras.layers import (Conv2D, Input, ZeroPadding2D, Add, Reshape,
                                      UpSampling2D, MaxPooling2D, Concatenate)
 from tensorflow.keras.layers import LeakyReLU, Layer
 from tensorflow.keras.layers import BatchNormalization
@@ -209,6 +209,9 @@ def _main(args):
             if stride > 1:
                 # Darknet uses left and top padding instead of 'same' mode
                 prev_layer = ZeroPadding2D(((1, 0), (1, 0)))(prev_layer)
+            if route_groups > 1:
+                prev_layer = prev_layer[:, :, :, 0:int(prev_layer.shape[3]/route_groups)]
+            print("--input shape", prev_layer.shape)
 
             conv_layer = (Conv2D(
                 filters, (size, size),
@@ -217,8 +220,8 @@ def _main(args):
                 use_bias=not batch_normalize,
                 weights=conv_weights,
                 activation=act_fn,
-                groups=route_groups,
-                padding=padding))(prev_layer)
+                padding=padding)
+                )(prev_layer)
 
             if batch_normalize:
                 conv_layer = (BatchNormalization(
