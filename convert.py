@@ -137,6 +137,7 @@ def _main(args):
     count = 0
     out_index = []
     route_groups = 1  # groups number for route layer in tiny model
+    group_id = 0
     for section in cfg_parser.sections():
         print('Parsing section {}'.format(section))
         if section.startswith('convolutional'):
@@ -209,9 +210,11 @@ def _main(args):
             if stride > 1:
                 # Darknet uses left and top padding instead of 'same' mode
                 prev_layer = ZeroPadding2D(((1, 0), (1, 0)))(prev_layer)
+            
             if route_groups > 1:
-                prev_layer = prev_layer[:, :, :, 0:int(prev_layer.shape[3]/route_groups)]
-            print("--input shape", prev_layer.shape)
+                print("route with groups: ", str(route_groups), " and id: ", str(group_id))
+                group_size = int(prev_layer.shape[3]/route_groups)
+                prev_layer = prev_layer[:, :, :, group_size * group_id : group_size * (group_id + 1)]
 
             conv_layer = (Conv2D(
                 filters, (size, size),
@@ -257,8 +260,10 @@ def _main(args):
                 prev_layer = skip_layer
                 if 'groups' in cfg_parser[section]:
                     route_groups = int(cfg_parser[section]['groups'])
+                    group_id = int(cfg_parser[section]['group_id'])
                 else:
                     route_groups = 1
+                    group_id = 0
 
         elif section.startswith('maxpool'):
             size = int(cfg_parser[section]['size'])
