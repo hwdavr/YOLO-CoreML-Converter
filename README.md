@@ -16,7 +16,8 @@ unified_converter: A converter to convert TensorFlow and PyTorch model to CoreML
 - Support any model supported by [coremltools](https://coremltools.readme.io/docs/unified-conversion-api)
 
 ---
-## Pretrained Weights file Models
+## Pretrained Models
+### Weights file Models
 - YOLOv3  
 Weights file: https://pjreddie.com/media/files/yolov3.weights  
 Configure file: https://raw.githubusercontent.com/AlexeyAB/darknet/master/cfg/yolov3.cfg  
@@ -31,6 +32,9 @@ Configure file: https://raw.githubusercontent.com/AlexeyAB/darknet/master/cfg/yo
 Weights file: https://github.com/AlexeyAB/darknet/releases/download/yolov4/yolov4-tiny.weights
 If above link canot work, please go to https://github.com/AlexeyAB/darknet/releases/tag/yolov4 and download file yolov4-tiny.weights.   
 Configure file: https://raw.githubusercontent.com/AlexeyAB/darknet/master/cfg/yolov4-tiny.cfg
+
+### Keras H5 models
+https://github.com/david8862/keras-YOLOv3-model-set
 
 ## Quick Start
 
