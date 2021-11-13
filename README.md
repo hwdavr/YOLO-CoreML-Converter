@@ -56,3 +56,5 @@ For YOLO tiny model, please specify `-t` option.
     - tensorflow 2.3.0
     - coremltools 5.0
     
+## Verify Converted Models
+To verify the converted YOLO model, please use my [YOLOv3 CoreML project](https://github.com/hwdavr/YOLO-CoreML) to verify. 
